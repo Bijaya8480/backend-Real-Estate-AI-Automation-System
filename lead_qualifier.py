@@ -39,51 +39,64 @@ sia = _build_sentiment_analyzer()
 
 
 LEAD_KEYWORDS = {
-    'hot': ['urgent', 'asap', 'ready', 'immediate', 'now', 'today', 'tomorrow', 'budget', '$', 'committed', 'serious'],
-    'warm': ['interested', 'looking', 'considering', 'maybe', 'perhaps', 'view'],
-    'cold': ['info', 'general', 'brochure']
+    "hot": [
+        "urgent",
+        "asap",
+        "ready",
+        "immediate",
+        "now",
+        "today",
+        "tomorrow",
+        "budget",
+        "$",
+        "committed",
+        "serious",
+    ],
+    "warm": ["interested", "looking", "considering", "maybe", "perhaps", "view"],
+    "cold": ["info", "general", "brochure"],
 }
 
+
 def qualify_lead(lead_text: str) -> Dict[str, any]:
-    """
-    Qualify Real Estate lead: Hot/Warm/Cold.
-    """
+    """Qualify Real Estate lead: Hot/Warm/Cold."""
     score = 0
     words = lead_text.lower().split()
-    
-    # Keyword score
+
     for word in words:
-        if any(hot in word for hot in LEAD_KEYWORDS['hot']):
+        if any(hot in word for hot in LEAD_KEYWORDS["hot"]):
             score += 3
-        elif any(warm in word for warm in LEAD_KEYWORDS['warm']):
+        elif any(warm in word for warm in LEAD_KEYWORDS["warm"]):
             score += 2
-        elif any(cold in word for cold in LEAD_KEYWORDS['cold']):
+        elif any(cold in word for cold in LEAD_KEYWORDS["cold"]):
             score -= 1
-    
+
     # Sentiment boost
     sent = sia.polarity_scores(lead_text)
-    score += sent['compound'] * 2  # Positive intent
-    
-    # Entities (money/person high score) - only if spacy is available
+    score += sent["compound"] * 2
+
+    # Entities boost (only if spacy is available)
     entity_count = 0
     if spacy_available and nlp is not None:
         doc = nlp(lead_text.lower())
-        if any(ent.label_ in ['MONEY', 'PERSON', 'DATE'] for ent in doc.ents):
+        if any(ent.label_ in ["MONEY", "PERSON", "DATE"] for ent in doc.ents):
             score += 2
-        entity_count = len([e for e in doc.ents if e.label_ in ['MONEY','PERSON']])
-    
+        entity_count = len([e for e in doc.ents if e.label_ in ["MONEY", "PERSON"]])
+
     if score >= 7:
-        qual = 'Hot'
+        qual = "Hot"
     elif score >= 3:
-        qual = 'Warm'
+        qual = "Warm"
     else:
-        qual = 'Cold'
-    
+        qual = "Cold"
+
     return {
-        'qualification': qual,
-        'score': round(score, 2),
-        'reasoning': f"Keyword matches, sentiment {sent['compound']:.2f}, entities: {entity_count}"
+        "qualification": qual,
+        "score": round(score, 2),
+        "reasoning": (
+            f"Keyword matches, sentiment {sent['compound']:.2f}, entities: {entity_count}"
+        ),
     }
+
 
 if __name__ == "__main__":
     sample_hot = "Ready to buy 3BHK now, budget $600k, call me ASAP."
