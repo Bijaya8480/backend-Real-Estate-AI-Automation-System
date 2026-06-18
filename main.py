@@ -4,10 +4,17 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Dict, Any, Optional
 
-from backend.email_classifier import classify_email
-from backend.document_processor import extract_info_from_text
+# Support both package and non-package execution.
+# Prefer relative imports when `backend` is a package.
+try:
+    from .email_classifier import classify_email
+    from .document_processor import extract_info_from_text
+    from .lead_qualifier import qualify_lead
+except ImportError:  # pragma: no cover
+    from email_classifier import classify_email
+    from document_processor import extract_info_from_text
+    from lead_qualifier import qualify_lead
 
-from backend.lead_qualifier import qualify_lead
 
 app = FastAPI(
     title="Real Estate AI Automation API",
