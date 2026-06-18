@@ -19,5 +19,8 @@ EXPOSE 8000
 # Basic health endpoint uses the FastAPI root GET / which returns JSON.
 HEALTHCHECK CMD python -c "import urllib.request; print(urllib.request.urlopen('http://localhost:8000/').status)" || exit 1
 
+ENV PYTHONPATH=/app
+
 ENTRYPOINT ["uvicorn", "main:app", "--host=0.0.0.0", "--port=8000"]
+
 
